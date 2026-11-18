@@ -7,3 +7,5 @@ C0原始价100元，C1自2026-11生效为120元，DRAFT未批准不可结算。�
 业务ID和超大整数按文本保形；Decimal参与数量金额计算，对外序列化为字符串。哨兵集合定义在app/values.py，缺失值不能当零。所有时间带UTC偏移，先转UTC比较，业务日按指定地区划分。区间统一[start,end)。重复业务键保留第一条、完全相同行计重复；值冲突行隔离且保留原值。空文件、全空白、仅表头分开拒绝。
 
 运行清单包括输入sha256、规则版本、参数、生成时刻与耗时。源行编号以CSV解析器的物理结束行号表示，引号内换行不增加记录数。输入超过4MB返回413，非法表头和类型返回422，失效版本复核返回409。
+
+split_mapping参数声明编码拆分：split_id批次号、source_item旧码、effective生效周期(YYYY-MM)、可选source_cumulative声明旧码已审累计、targets新码列表(item/label/carryover承接量)。旧码在effective前的最后已审累计为拆分基期，承接合计必须等于基期；声明值与台账不符报SPLIT_BASELINE_MISMATCH，承接不平报SPLIT_UNBALANCED，无基期可回溯报SPLIT_NO_BASELINE，映射结构非法报SPLIT_INVALID。映射切换失败整批拒绝且不产生新批次，旧版签证保留。生效起旧码行隔离CODE_RETIRED防止重复计量，新码未生效行隔离SPLIT_NOT_EFFECTIVE；新码首期前审量按承接量覆盖并标记previous_source=split_mapping，显式previous_revisions优先于承接量。输出行携带source_item、split_id、split_base，本期对账按新码汇总承接量、本期增量与净额并回指旧码已审累计。样例split.csv自带默认拆分映射，显式parameters覆盖默认。

@@ -30,10 +30,14 @@
 | TRAP-07 | 累计量空值 | 按零冲回 | 隔离缺失 | `app/values.py` | `tests/test_m2.py::test_real_null_not_zero` |
 | TRAP-10 | 分币舍入 | 浮点误差 | 分项量化后净额守恒 | `app/modules/m5_deductions/rules.py` | `tests/test_m5.py::test_fraction_rounds_to_cent` |
 | TRAP-23 | 变更生效边界 | 旧价覆盖 | 按周期选择已批版本 | `app/modules/m3_changes/rules.py` | `tests/test_m3.py::test_effective_boundary` |
+| TRAP-27 | 拆分承接不平 | 直接换码申报 | 承接合计须对平旧码已审累计，否则整批回退 | `app/modules/m2_billitems/rules.py` | `tests/test_split.py::test_unbalanced_split_rejected` |
+| TRAP-28 | 旧码拆分后仍申报 | 同段量双算 | 生效起旧码行CODE_RETIRED隔离 | `app/modules/m2_billitems/rules.py` | `tests/test_split.py::test_retired_old_code_not_double_counted` |
+| TRAP-29 | 新码首期前审断档 | 按零起算重复计量 | 承接量覆盖首期前审并标记来源 | `app/modules/m4_increment/rules.py` | `tests/test_split.py::test_first_period_previous_comes_from_carryover` |
+| TRAP-30 | 映射切换失败 | 半切换污染签证 | 原子拒绝不入库，旧版签证保留 | `app/pipeline.py` | `tests/test_split.py::test_failed_switch_keeps_old_visa` |
 
 ## 对账规则
 
-输入原始逻辑行=最终采纳来源行+隔离来源行+重复行+空白行+分段表头。派生记录用_sources保存完整来源，因此分组不丢行。业务预期合计与上游申报合计之差等于逐行差异之和。结果按输入摘要、规则版本及参数产生唯一批次，事务写入；同源重跑只复用已有批次。
+输入原始逻辑行=最终采纳来源行+隔离来源行+重复行+空白行+分段表头。派生记录用_sources保存完整来源，因此分组不丢行。业务预期合计与上游申报合计之差等于逐行差异之和。结果按输入摘要、规则版本及参数产生唯一批次，事务写入；同源重跑只复用已有批次。编码拆分批次中，承接量只覆盖新码首期前审基期、不新增记录，重跑同一批不会重复新增；拆分对账要求承接合计=旧码已审累计，且每个新码行可经source_item、split_id回溯旧码来源。
 
 ## 已知不覆盖
 

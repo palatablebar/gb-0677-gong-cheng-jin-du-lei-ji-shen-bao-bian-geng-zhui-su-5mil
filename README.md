@@ -23,7 +23,7 @@ docker compose exec -T app pytest -q
 
 ## 核心规则
 
-累计申报必须减前期已审金额，变更按审批生效版本覆盖；负进度需关联冲回证据。
+累计申报必须减前期已审金额，变更按审批生效版本覆盖；负进度需关联冲回证据。编码拆分按映射承接前审累计，承接合计须与旧码已审累计对平；切换失败整批回退，保留旧版签证。
 
 ## 演示
 
@@ -34,7 +34,7 @@ docker compose exec -T app pytest -q
 
 ## 输入与输出
 
-输入列见 `docs/DATA-DICTIONARY.md`。项目包含dirty.csv、clean.csv、legacy.csv，统一走实际导入路径。上传限制4MB，拒绝不带时区的时间。业务键按字符串保留，Decimal参与计算，空值不会当零。
+输入列见 `docs/DATA-DICTIONARY.md`。项目包含dirty.csv、clean.csv、legacy.csv、split.csv（编码拆分样例，自带默认映射参数），统一走实际导入路径。上传限制4MB，拒绝不带时区的时间。业务键按字符串保留，Decimal参与计算，空值不会当零。
 
 `POST /api/runs` 接收sample或csv；`GET /api/runs`返回历史批次；`POST /api/runs/<id>/review`需要version与decision；`GET /api/runs/<id>/archive`返回唯一证据导出。
 
